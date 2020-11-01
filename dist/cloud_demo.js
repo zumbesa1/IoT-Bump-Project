@@ -4,7 +4,8 @@ var app = new Vue({
     el: "#app",
     data: {
         doubleClick_1: unknown, // the state of bump on device 1
-        doubleClick_2: unknown, // the state of bump on device 2 
+        doubleClick_2: unknown, // the state of bump on device 2
+        ClickCounter: 0, // how many times there was a click 
         doubleClickSync: false,  // true if the doubleClicks were pressed within 1 second   
     },
     // This function is executed once when the page is loaded.
@@ -28,10 +29,10 @@ var app = new Vue({
         // react on events: update the variables to be displayed
         updateVariables(ev) {
             // Event "bump"
-            if (ev.eventName === "bump") {
-                this.buttonPressCounter = ev.eventData.counter;
-                if (ev.eventData.message === "doubleClick") {
-                    this.buttonsSync = ev.eventData.pressedSync;
+            if (ev.eventName === "ev") {
+                this.ClickCounter = ev.eventData.counter;
+                if (ev.eventData.message === "double click") {
+                    this.doubleClickSync = ev.eventData.doubleClickSync;
                 }
             }
 
