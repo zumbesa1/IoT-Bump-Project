@@ -1,34 +1,17 @@
-// remember the last event so that we can check if two buttons were pressed within 1 second
-var lastButtonPressEvent = {
+// remember the last event so that we can check if two buttons were double clicked within 1 second
+var lastDoubleClickEvent = {
     deviceId: "",
     timestamp: 0
 }
 
 // remember how many times the buttons were pressed
-var buttonPressCounter = 0;
+var doubleClickCounter = 0;
 
-// react on the "blinkingStateChanged" Event
-function handleBlinkingStateChanged (event) {
+// react on the "bump" Event
+function handleBumpStateChanged(event) {
     // read variables from the event
     let ev = JSON.parse(event.data);
-    let evData = ev.data; // the data from the argon event: "started blinking" or "stopped blinking"
-    let evDeviceId = ev.coreid; // the device id
-    let evTimestamp = Date.parse(ev.published_at); // the timestamp of the event
-
-    // the data we want to send to the clients
-    let data = {
-        message: evData, // just forward "started blinking" or "stopped blinking"
-    }
-
-    // send data to all connected clients
-    sendData("blinkingStateChanged", data, evDeviceId, evTimestamp );
-}
-
-// react on the "buttonStateChanged" Event
-function handleButtonStateChanged (event) {
-    // read variables from the event
-    let ev = JSON.parse(event.data);
-    let evData = ev.data; // the data from the argon event: "pressed" or "released"
+    let evData = ev.data; // the data from the argon event: "doubleClick"
     let evDeviceId = ev.coreid; // the device id
     let evTimestamp = Date.parse(ev.published_at); // the timestamp of the event
 
@@ -36,42 +19,40 @@ function handleButtonStateChanged (event) {
     let sync = false;
     let msg = "";
 
-    if (evData === "pressed") {
-        buttonPressCounter++; // increase the buttonPressCounter by 1
-        msg = "pressed";
+    if (evData === "doubleClick") {
+        DoubleClickCounter++; // increase the doubleClickCounter by 1
+    msg = "double clicked";
 
-        // check if the last two button press events were whithin 1 second
-        if (evTimestamp - lastButtonPressEvent.timestamp < 1000) {
-            if (evDeviceId !== lastButtonPressEvent.deviceId) {
-                sync = true;
-            }
+    // check if the last two double click events were whithin 1 second
+    if (evTimestamp - lastDoubleClickEvent.timestamp < 1000) {
+        if (evDeviceId !== lastDoubleClickEvent.deviceId) {
+            sync = true;
         }
-
-        lastButtonPressEvent.timestamp = evTimestamp;
-        lastButtonPressEvent.deviceId = evDeviceId;
-    } 
-    else if (evData === "released") {
-        msg = "released";
     }
+
+    lastDoubleClickEvent.timestamp = evTimestamp;
+    lastDoubleClickEvent.deviceId = evDeviceId;
+} 
+    
     else {
-        msg = "unknown state";
-    }
+    msg = "unknown state";
+}
 
-    // the data we want to send to the clients
-    let data = {
-        message: msg,
-        counter: buttonPressCounter,
-        pressedSync: sync
-    }
+// the data we want to send to the clients
+let data = {
+    message: msg,
+    counter: doubleClickCounter,
+    doubleClickSync: sync
+}
 
-    // send data to all connected clients
-    sendData("buttonStateChanged", data, evDeviceId, evTimestamp );
+// send data to all connected clients
+sendData("bumbStateChanged", data, evDeviceId, evTimestamp);
 }
 
 // send data to the clients.
 // You don't have to change this function
-function sendData(evName, evData, evDeviceId, evTimestamp ) {
-    
+function sendData(evName, evData, evDeviceId, evTimestamp) {
+
     // map device id to device nr
     let nr = exports.deviceIds.indexOf(evDeviceId)
 
@@ -90,6 +71,5 @@ function sendData(evName, evData, evDeviceId, evTimestamp ) {
 exports.deviceIds = [];
 exports.sse = null;
 
-// export your own functions here as well
-exports.handleBlinkingStateChanged = handleBlinkingStateChanged;
-exports.handleButtonStateChanged = handleButtonStateChanged;
+// export your functions
+exports.handleBumpStateChanged = handleBumpStateChanged;

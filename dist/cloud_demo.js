@@ -3,13 +3,9 @@ var rootUrl = window.location.origin; // get the root URL, e.g. https://example.
 var app = new Vue({
     el: "#app",
     data: {
-        buttonState_0: "unknown", // the state of the button on device 0
-        buttonState_1: "unknown", // the state of the button on device 1
-        buttonPressCounter: 0,    // how many times the buttons were pressed
-        buttonsSync: false,       // true if the buttons were pressed within 1 second
-        blinking_0: false,        // true if device 0 is blinking.
-        blinking_1: false,        // true if device 0 is blinking.
-        // add your own variables here ...
+        doubleClick_1: unknown, // the state of bump on device 1
+        doubleClick_2: unknown, // the state of bump on device 2 
+        doubleClickSync: false,  // true if the doubleClicks were pressed within 1 second   
     },
     // This function is executed once when the page is loaded.
     mounted: function () {
@@ -31,56 +27,26 @@ var app = new Vue({
         },
         // react on events: update the variables to be displayed
         updateVariables(ev) {
-            // Event "buttonStateChanged"
-            if (ev.eventName === "buttonStateChanged") {
+            // Event "bump"
+            if (ev.eventName === "bump") {
                 this.buttonPressCounter = ev.eventData.counter;
-                if (ev.eventData.message === "pressed") {
+                if (ev.eventData.message === "doubleClick") {
                     this.buttonsSync = ev.eventData.pressedSync;
                 }
             }
-            // Event "blinkingStateChanged"
-            else if (ev.eventName === "blinkingStateChanged") {
-                if (ev.eventData.message === "started blinking") {
-                    if (ev.deviceNumber === 0) {
-                        this.blinking_0 = true;
-                    }
-                    else if (ev.deviceNumber === 1) {
-                        this.blinking_1 = true;
-                    }
-                }
-                if (ev.eventData.message === "stopped blinking") {
-                    if (ev.deviceNumber === 0) {
-                        this.blinking_0 = false;
-                    }
-                    else if (ev.deviceNumber === 1) {
-                        this.blinking_1 = false;
-                    }
-                }
-            }
+
         },
-        // call the function "blinkRed" in your backend
-        blinkRed: function (nr) {
-            var duration = 2000; // blinking duration in milliseconds
-            axios.post(rootUrl + "/api/device/" + nr + "/function/blinkRed", { arg: duration })
+        // get the value of the variable "bumpState" on the device with number "nr" from your backend
+        getDoubleClick: function (nr) {
+            axios.get(rootUrl + "/api/device/" + nr + "/variable/bumpState")
                 .then(response => {
                     // Handle the response from the server
-                    console.log(response.data); // we could to something meaningful with the return value here ... 
-                })
-                .catch(error => {
-                    alert("Could not call the function 'blinkRed' of device number " + nr + ".\n\n" + error)
-                })
-        },
-        // get the value of the variable "buttonState" on the device with number "nr" from your backend
-        getButtonState: function (nr) {
-            axios.get(rootUrl + "/api/device/" + nr + "/variable/buttonState")
-                .then(response => {
-                    // Handle the response from the server
-                    var buttonState = response.data.result;
+                    var bumpState = response.data.result;
                     if (nr === 0) {
-                        this.buttonState_0 = buttonState;
+                        this.doubleClick_1 = bumpState;
                     }
                     else if (nr === 1) {
-                        this.buttonState_1 = buttonState;
+                        this.doubleClick_2 = bumpState;
                     }
                     else {
                         console.log("unknown device number: " + nr);
